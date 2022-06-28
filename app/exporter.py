@@ -19,6 +19,8 @@
 #
 #    Created by renzo on 23.02.18.
 #
+
+import os
 import fnmatch
 import time
 from dateutil import parser as dtparser
@@ -43,12 +45,27 @@ class S3Collector(object):
     def __init__(self, config):
         self._config = config
         self._s3config = S3Config()
-        access_key = config.get('access_key', False)
-        if access_key:
-            self._s3config.update_option('access_key', access_key)
-        secret_key = config.get('secret_key', False)
-        if secret_key:
-            self._s3config.update_option('secret_key', secret_key)
+
+        access_key_from_env = os.environ.get("AWS_ACCESS_KEY_ID", False)
+        access_key_from_config = config.get('access_key', False)
+        if access_key_from_env:
+            self._s3config.update_option('access_key', access_key_from_env)
+        elif access_key_from_config:
+            self._s3config.update_option('access_key', access_key_from_config)
+        else:
+            print "ERROR: missing aws access key id"
+            exit(1)
+
+        secret_key_from_env = os.environ.get("AWS_SECRET_ACCESS_KEY", False)
+        secret_key_from_config = config.get('secret_key', False)
+        if secret_key_from_env:
+            self._s3config.update_option('secret_key', secret_key_from_env)
+        elif secret_key_from_config:
+            self._s3config.update_option('secret_key', secret_key_from_config)
+        else:
+            print "ERROR: missing aws secret access key"
+            exit(1)
+
         host_base = config.get('host_base', False)
         if host_base:
             self._s3config.update_option('host_base', host_base)
